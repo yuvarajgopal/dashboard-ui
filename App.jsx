@@ -1,6 +1,6 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import Dashboard from "./Dashboard.jsx"; // include .jsx
+import React, { useState } from "react";
+import Login from "./Login.jsx";
+import Dashboard from "./Dashboard.jsx";
 import './index.css';
 
 // sample config
@@ -17,7 +17,24 @@ const config = {
   logsUrl: "https://logs.example.com"
 };
 
-const handleScale = (data) => console.log("Scale:", data);
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<Dashboard config={config} onScale={handleScale} />);
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
+  const handleScale = (data) => {
+    console.log("Scale:", data);
+  };
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  return <Dashboard config={config} onScale={handleScale} onLogout={handleLogout} />;
+}

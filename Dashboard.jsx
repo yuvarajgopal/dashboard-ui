@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import "./index.css";
 import * as FiIcons from "react-icons/fi";
 
-export default function Dashboard({ config, onScale }) {
+export default function Dashboard({ config, onScale, onLogout }) {
   const [clusterName, setClusterName] = useState("");
   const [brokerName, setBrokerName] = useState("");
   const [minEngines, setMinEngines] = useState("");
@@ -18,9 +18,9 @@ export default function Dashboard({ config, onScale }) {
     return String(val);
   };
 
-  const renderIcon = (Icon, size = 20) => {
+  const renderIcon = (Icon, size = 20, className = "") => {
     if (!Icon) return null;
-    if (typeof Icon === "function") return <Icon size={size} />;
+    if (typeof Icon === "function") return <Icon size={size} className={className} />;
     if (React.isValidElement(Icon)) return Icon;
     return null;
   };
@@ -81,29 +81,29 @@ export default function Dashboard({ config, onScale }) {
       label: "Cluster",
       value: clusterName,
       Icon: FiIcons.FiCpu,
-      from: "from-pink-200",
-      to: "to-red-300",
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
     },
     {
       label: "Engines",
       value: config?.engineCount ?? 0,
       Icon: FiIcons.FiServer,
-      from: "from-blue-200",
-      to: "to-sky-300",
+      bgColor: "bg-emerald-50",
+      iconColor: "text-emerald-600",
     },
     {
       label: "Brokers",
       value: brokersList.length,
       Icon: FiIcons.FiLayers,
-      from: "from-green-200",
-      to: "to-emerald-300",
+      bgColor: "bg-purple-50",
+      iconColor: "text-purple-600",
     },
     {
       label: "Directors",
       value: 1,
       Icon: FiIcons.FiUsers,
-      from: "from-purple-200",
-      to: "to-violet-300",
+      bgColor: "bg-amber-50",
+      iconColor: "text-amber-600",
     },
   ];
 
@@ -128,175 +128,230 @@ export default function Dashboard({ config, onScale }) {
 
   // ---------- Render ----------
   return (
-    <div className="w-full h-screen p-8 bg-gradient-to-br from-green-50 to-emerald-50 flex flex-col gap-5 overflow-hidden">
-      <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-1">
-        Data Synapse Grid Controller
-      </h1>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 w-full px-10">
-        {stats.map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <div
-              className={`rounded-lg shadow-lg p-4 text-white bg-gradient-to-br ${item.from} ${item.to} flex flex-col items-center justify-center gap-2`}
-            >
-              {renderIcon(item.Icon, 22)}
-              <div className="text-center">
-                <h3 className="font-semibold text-sm">
-                  {sanitizeText(item.label)}
-                </h3>
-                <p className="font-bold text-xl">
-                  {sanitizeText(item.value)}
-                </p>
-              </div>
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col">
+      {/* Header Section */}
+      <header className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Data Synapse Grid Controller
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Manage and scale your grid infrastructure
+              </p>
             </div>
-          </motion.div>
-        ))}
-      </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
+                <FiIcons.FiShield size={16} className="text-green-600" />
+                <span className="text-sm font-medium text-green-700">System Active</span>
+              </div>
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 transition-colors"
+                >
+                  <FiIcons.FiLogOut size={16} />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {/* Admin Cards */}
-      <div className="flex justify-center px-10">
-        <div className="grid grid-cols-3 gap-5 max-w-2xl w-full">
-          {adminCards.map((item, i) => (
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
+              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6"
             >
-              <div
-                className="rounded-lg shadow-md p-3 bg-gradient-to-br from-green-50 to-emerald-100 text-gray-700 text-center cursor-pointer hover:scale-105 hover:shadow-lg transform transition-all"
-                onClick={() => item.url && window.open(item.url, "_blank")}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  {renderIcon(item.Icon, 18)}
-                  <div className="text-sm font-medium">{sanitizeText(item.label)}</div>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    {sanitizeText(item.label)}
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {sanitizeText(item.value)}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-full ${item.bgColor}`}>
+                  {renderIcon(item.Icon, 24, item.iconColor)}
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
-      </div>
 
-      {/* Engine Scaling Form */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="px-10 flex-1 flex flex-col min-h-0"
-      >
-        <div className="rounded-xl shadow-2xl bg-white max-w-5xl mx-auto overflow-hidden flex flex-col h-full w-full">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 p-4 text-white">
-            <div className="flex items-center justify-center gap-2">
-              <FiIcons.FiSliders size={20} />
-              <h2 className="text-lg font-bold">Engine Scaling Configuration</h2>
-            </div>
-          </div>
-
-          {/* Form Body */}
-          <div className="px-10 py-6 flex-1 flex flex-col min-h-0 overflow-hidden">
-            <div className="grid grid-cols-2 gap-6">
-              {/* Cluster Name */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FiIcons.FiLayers size={15} className="text-green-600" />
-                  Cluster Name
-                </label>
-                <input
-                  value={sanitizeText(clusterName)}
-                  readOnly
-                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-400 transition-colors text-sm"
-                  placeholder="Cluster name"
-                />
-              </div>
-
-              {/* Broker Selection */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FiIcons.FiServer size={15} className="text-emerald-600" />
-                  Broker Selection
-                </label>
-                <select
-                  value={brokerName}
-                  onChange={(e) => setBrokerName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors cursor-pointer hover:border-emerald-300 text-sm"
-                >
-                  <option value="">Select a broker...</option>
-                  {brokersList.map((b, i) => (
-                    <option key={i} value={b.value}>
-                      {b.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Min Engines */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FiIcons.FiMinimize2 size={15} className="text-green-500" />
-                  Min Engines
-                </label>
-                <input
-                  type="number"
-                  value={minEngines}
-                  onChange={(e) => setMinEngines(e.target.value)}
-                  placeholder="0"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-400 transition-colors text-sm"
-                />
-              </div>
-
-              {/* Max Engines */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <FiIcons.FiMaximize2 size={15} className="text-orange-500" />
-                  Max Engines
-                </label>
-                <input
-                  type="number"
-                  value={maxEngines}
-                  onChange={(e) => setMaxEngines(e.target.value)}
-                  placeholder="0"
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 transition-colors text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="mt-auto pt-5 pb-1">
-              <button
-                onClick={handleSubmit}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-3.5 px-8 rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transform transition-all duration-200 flex items-center justify-center gap-2.5 text-base"
+        {/* Admin Quick Links */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {adminCards.map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
               >
-                <FiIcons.FiCheck size={18} />
-                Apply Configuration
-              </button>
-            </div>
+                <div
+                  className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 cursor-pointer hover:border-green-500 hover:shadow-md transition-all group"
+                  onClick={() => item.url && window.open(item.url, "_blank")}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gray-50 group-hover:bg-green-50 transition-colors">
+                      {renderIcon(item.Icon, 20)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{sanitizeText(item.label)}</p>
+                      <p className="text-xs text-gray-500">Access portal</p>
+                    </div>
+                    <FiIcons.FiExternalLink size={16} className="ml-auto text-gray-400 group-hover:text-green-600" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </motion.div>
+
+        {/* Engine Scaling Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            {/* Card Header */}
+            <div className="border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center gap-2">
+                <FiIcons.FiSliders size={20} className="text-gray-700" />
+                <h2 className="text-lg font-semibold text-gray-900">Engine Scaling Configuration</h2>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Configure engine scaling parameters for your cluster</p>
+            </div>
+
+            {/* Form Body */}
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cluster Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cluster Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiIcons.FiLayers size={16} className="text-gray-400" />
+                    </div>
+                    <input
+                      value={sanitizeText(clusterName)}
+                      readOnly
+                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                      placeholder="Cluster name"
+                    />
+                  </div>
+                </div>
+
+                {/* Broker Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Broker Selection
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiIcons.FiServer size={16} className="text-gray-400" />
+                    </div>
+                    <select
+                      value={brokerName}
+                      onChange={(e) => setBrokerName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-pointer text-sm appearance-none"
+                    >
+                      <option value="">Select a broker...</option>
+                      {brokersList.map((b, i) => (
+                        <option key={i} value={b.value}>
+                          {b.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <FiIcons.FiChevronDown size={16} className="text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Min Engines */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Minimum Engines
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiIcons.FiMinimize2 size={16} className="text-gray-400" />
+                    </div>
+                    <input
+                      type="number"
+                      value={minEngines}
+                      onChange={(e) => setMinEngines(e.target.value)}
+                      placeholder="0"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Max Engines */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Maximum Engines
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiIcons.FiMaximize2 size={16} className="text-gray-400" />
+                    </div>
+                    <input
+                      type="number"
+                      value={maxEngines}
+                      onChange={(e) => setMaxEngines(e.target.value)}
+                      placeholder="0"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSubmit}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  <FiIcons.FiCheck size={18} />
+                  Apply Configuration
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </main>
 
       {/* Footer */}
-      <footer className="pt-4 pb-3">
-        <div className="max-w-7xl mx-auto px-10">
-          <div className="border-t border-green-200 pt-2">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-gray-600">
-                <span className="text-xs">© DevSecOps - Veritas  - TD Securities</span>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-gray-500">
-                <span className="text-xs">GED - Data Synapse Grid Controller v1.0</span>
-                <span className="hidden md:inline">•</span>
-                <span className="flex items-center gap-1">
-                  <FiIcons.FiShield size={12} className="text-green-500" />
-                  <span className="text-xs">Secure</span>
-                </span>
-              </div>
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-gray-500">
+            <div>
+              <span>© DevSecOps - Veritas - TD Securities</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span>GED - Data Synapse Grid Controller v1.0</span>
+              <span className="hidden md:inline">•</span>
+              <span className="flex items-center gap-1">
+                <FiIcons.FiShield size={14} className="text-green-500" />
+                <span>Secure</span>
+              </span>
             </div>
           </div>
         </div>
