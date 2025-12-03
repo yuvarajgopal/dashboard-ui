@@ -1,24 +1,27 @@
-import React, { useState } from "react";
-import Login from "./Login.jsx";
-import Dashboard from "./Dashboard.jsx";
-import './index.css';
-
-// sample config
-const config = {
-  clusterName: "Cluster-A",
-  engineCount: 5,
-  brokers: [
-    { label: "Broker 1", value: "b1" },
-    { label: "Broker 2", value: "b2" }
-  ],
-  datadogUrl: "https://datadog.com",
-  directorUrl: "https://director.example.com",
-  brokerUrl: "https://broker.example.com",
-  logsUrl: "https://logs.example.com"
-};
+import React, { useState, useEffect } from "react";
+import Login from "./src/Login.jsx";
+import Dashboard from "./src/Dashboard.jsx";
+import './src/index.css';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [config, setConfig] = useState(null);
+
+  // Load config from JSON file
+  useEffect(() => {
+    fetch('/config/config.json')
+      .then(response => response.json())
+      .then(data => setConfig(data))
+      .catch(error => console.error('Error loading config:', error));
+  }, []);
+
+  // Check for existing auth token on component mount
+  useEffect(() => {
+    const authToken = localStorage.getItem('authToken');
+    if (authToken) {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -26,6 +29,8 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    // Clear auth token from localStorage
+    localStorage.removeItem('authToken');
   };
 
   const handleScale = (data) => {
@@ -34,6 +39,15 @@ export default function App() {
 
   if (!isAuthenticated) {
     return <Login onLogin={handleLogin} />;
+  }
+
+  // Show loading state while config is being fetched
+  if (!config) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-gray-600">Loading configuration...</div>
+      </div>
+    );
   }
 
   return <Dashboard config={config} onScale={handleScale} onLogout={handleLogout} />;

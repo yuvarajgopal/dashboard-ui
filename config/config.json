@@ -1,5 +1,5 @@
 {
-  "clusterName": "Cluster-A",
+  "clusterName": "Cluster-B",
   "engineCount": 5,
   "brokers": [
     { "label": "Broker 1", "value": "b1" },

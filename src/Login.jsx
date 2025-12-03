@@ -13,6 +13,8 @@ export default function Login({ onLogin }) {
     setError("");
 
     if (username === "admin" && password === "admin") {
+      // Save auth token to localStorage
+      localStorage.setItem('authToken', 'authenticated');
       onLogin();
     } else {
       setError("Invalid username or password");
