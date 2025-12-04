@@ -66,10 +66,9 @@ export default function Dashboard({ config, onScale, onLogout }) {
     }
 
     const payload = {
-      clusterName,
-      brokerName,
-      minEngines: min,
-      maxEngines: max,
+      broker: brokerName,
+      minReplicas: min,
+      maxReplicas: max,
     };
 
     onScale(payload);
