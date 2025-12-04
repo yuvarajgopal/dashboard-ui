@@ -33,8 +33,28 @@ export default function App() {
     localStorage.removeItem('authToken');
   };
 
-  const handleScale = (data) => {
+  const handleScale = async (data) => {
     console.log("Scale:", data);
+    try {
+      const response = await fetch('/scale', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Scale operation successful:', result);
+      alert('Configuration applied successfully!');
+    } catch (error) {
+      console.error('Error scaling:', error);
+      alert(`Error applying configuration: ${error.message}`);
+    }
   };
 
   if (!isAuthenticated) {
