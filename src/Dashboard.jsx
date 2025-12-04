@@ -136,21 +136,33 @@ export default function Dashboard({ config, onScale, onLogout }) {
       label: "DataDog UI",
       url: config?.datadogUrl,
       Icon: FiIcons.FiDatabase,
+      bgColor: "bg-orange-50",
+      iconColor: "text-orange-600",
+      hoverBorder: "hover:border-orange-500",
     },
     {
       label: "Director UI",
       url: config?.directorUrl,
       Icon: FiIcons.FiFileText,
+      bgColor: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+      hoverBorder: "hover:border-indigo-500",
     },
     {
       label: "Broker1 UI",
       url: config?.brokerUrl,
       Icon: FiIcons.FiServer,
+      bgColor: "bg-teal-50",
+      iconColor: "text-teal-600",
+      hoverBorder: "hover:border-teal-500",
     },
     {
       label: "Broker2 UI",
       url: config?.broker2Url,
       Icon: FiIcons.FiServer,
+      bgColor: "bg-pink-50",
+      iconColor: "text-pink-600",
+      hoverBorder: "hover:border-pink-500",
     },
   ];
 
@@ -220,7 +232,7 @@ export default function Dashboard({ config, onScale, onLogout }) {
         {/* Admin Quick Links */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {adminCards.map((item, i) => (
               <motion.div
                 key={i}
@@ -229,18 +241,18 @@ export default function Dashboard({ config, onScale, onLogout }) {
                 transition={{ delay: 0.3 + i * 0.1 }}
               >
                 <div
-                  className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 cursor-pointer hover:border-green-500 hover:shadow-md transition-all group"
+                  className={`bg-white rounded-lg border border-gray-200 shadow-sm p-3 cursor-pointer ${item.hoverBorder} hover:shadow-md transition-all group`}
                   onClick={() => item.url && window.open(item.url, "_blank")}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gray-50 group-hover:bg-green-50 transition-colors">
-                      {renderIcon(item.Icon, 20)}
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-lg ${item.bgColor} transition-colors`}>
+                      {renderIcon(item.Icon, 18, item.iconColor)}
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{sanitizeText(item.label)}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm truncate">{sanitizeText(item.label)}</p>
                       <p className="text-xs text-gray-500">Access portal</p>
                     </div>
-                    <FiIcons.FiExternalLink size={16} className="ml-auto text-gray-400 group-hover:text-green-600" />
+                    <FiIcons.FiExternalLink size={14} className={`text-gray-400 ${item.iconColor.replace('text-', 'group-hover:text-')}`} />
                   </div>
                 </div>
               </motion.div>
