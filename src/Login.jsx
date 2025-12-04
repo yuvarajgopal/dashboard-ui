@@ -15,6 +15,7 @@ export default function Login({ onLogin }) {
     if (username === "admin" && password === "admin") {
       // Save auth token to localStorage
       localStorage.setItem('authToken', 'authenticated');
+      console.log('Auth token saved to localStorage:', localStorage.getItem('authToken'));
       onLogin();
     } else {
       setError("Invalid username or password");

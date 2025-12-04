@@ -18,8 +18,12 @@ export default function App() {
   // Check for existing auth token on component mount
   useEffect(() => {
     const authToken = localStorage.getItem('authToken');
+    console.log('Checking auth token on mount:', authToken);
     if (authToken) {
+      console.log('Auth token found, setting authenticated to true');
       setIsAuthenticated(true);
+    } else {
+      console.log('No auth token found');
     }
   }, []);
 
