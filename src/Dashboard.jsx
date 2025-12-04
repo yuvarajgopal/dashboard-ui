@@ -9,6 +9,7 @@ export default function Dashboard({ config, onScale, onLogout }) {
   const [minEngines, setMinEngines] = useState("");
   const [maxEngines, setMaxEngines] = useState("");
   const [brokersList, setBrokersList] = useState([]);
+  const [engineCount, setEngineCount] = useState(0);
 
   // ---------- Helpers (TEXT ONLY) ----------
   const sanitizeText = (val) => {
@@ -50,6 +51,29 @@ export default function Dashboard({ config, onScale, onLogout }) {
     }
   }, [config]);
 
+  // ---------- Fetch engine count ----------
+  useEffect(() => {
+    const fetchEngineCount = async () => {
+      try {
+        const response = await fetch('/enginecount');
+        if (response.ok) {
+          const data = await response.json();
+          setEngineCount(data.engine_count || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching engine count:', error);
+      }
+    };
+
+    // Fetch immediately
+    fetchEngineCount();
+
+    // Poll every 30 seconds
+    const interval = setInterval(fetchEngineCount, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // ---------- Submit handler ----------
   const handleSubmit = () => {
     if (!brokerName) {
@@ -85,7 +109,7 @@ export default function Dashboard({ config, onScale, onLogout }) {
     },
     {
       label: "Engines",
-      value: config?.engineCount ?? 0,
+      value: engineCount,
       Icon: FiIcons.FiServer,
       bgColor: "bg-emerald-50",
       iconColor: "text-emerald-600",
@@ -119,8 +143,13 @@ export default function Dashboard({ config, onScale, onLogout }) {
       Icon: FiIcons.FiFileText,
     },
     {
-      label: "Broker UI",
+      label: "Broker1 UI",
       url: config?.brokerUrl,
+      Icon: FiIcons.FiServer,
+    },
+    {
+      label: "Broker2 UI",
+      url: config?.broker2Url,
       Icon: FiIcons.FiServer,
     },
   ];
