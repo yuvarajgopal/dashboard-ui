@@ -75,17 +75,46 @@ export default function Dashboard({ config, onScale, onLogout }) {
   }, []);
 
   // ---------- Submit handler ----------
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
     if (!brokerName) {
       alert("Please select a broker.");
       return;
     }
 
-    const min = Number(minEngines) || 0;
-    const max = Number(maxEngines) || 0;
+    // Validate minimum engines
+    if (!minEngines || minEngines.trim() === "") {
+      alert("Minimum Engines cannot be empty.");
+      return;
+    }
 
-    if (min > max) {
-      alert("Min Engines cannot be greater than Max Engines.");
+    const min = Number(minEngines);
+    if (isNaN(min) || min <= 0) {
+      alert("Minimum Engines must be greater than 0.");
+      return;
+    }
+
+    // Validate maximum engines
+    if (!maxEngines || maxEngines.trim() === "") {
+      alert("Maximum Engines cannot be empty.");
+      return;
+    }
+
+    const max = Number(maxEngines);
+    if (isNaN(max) || max <= 0) {
+      alert("Maximum Engines must be greater than 0.");
+      return;
+    }
+
+    if (max > 3000) {
+      alert("Maximum Engines cannot be more than 3000.");
+      return;
+    }
+
+    // Validate max > min
+    if (max <= min) {
+      alert("Maximum Engines must be greater than Minimum Engines.");
       return;
     }
 
@@ -277,7 +306,7 @@ export default function Dashboard({ config, onScale, onLogout }) {
             </div>
 
             {/* Form Body */}
-            <div className="p-6">
+            <form onSubmit={handleSubmit} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Cluster Name */}
                 <div>
@@ -366,14 +395,14 @@ export default function Dashboard({ config, onScale, onLogout }) {
               {/* Submit Button */}
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <button
-                  onClick={handleSubmit}
+                  type="submit"
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                 >
                   <FiIcons.FiCheck size={18} />
                   Apply Configuration
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </motion.div>
       </main>
