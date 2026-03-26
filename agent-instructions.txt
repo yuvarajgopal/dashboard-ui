@@ -1,0 +1,98 @@
+Step 1: Ingress Gateway / Gateway API
+Purpose: Receives all user requests, validates, and triggers the workflow.
+Trigger points / API routing:
+User sends request via:
+POST /generate-code
+POST /plan-feature
+GET /status
+Gateway API parses request:
+Extracts intent from request payload (e.g., “generate product API code”)
+Adds metadata (user ID, request ID, project info)
+Gateway calls Orchestrator API internally via REST/gRPC:
+Example: POST /orchestrator/start-workflow
+Payload includes: user intent, metadata, previous state (if any)
+Technologies:
+FastAPI (Python)
+NGINX / Azure Application Gateway (Ingress)
+Optional: JWT/OAuth for auth
+🧠 Step 2: Orchestrator (ReAct + Routing Agent)
+Trigger: Called by Gateway API.
+Responsibilities:
+Receives request from Gateway
+Calls LLM (GPT) via LangChain to:
+Understand the user intent
+Decide which agent(s) to trigger next
+Determine which tools/APIs the agent will need
+LLM + Tools Usage at this stage:
+Codebase Tool: Check existing repo, get_file(), search_code()
+Knowledge Tool: Search past best practices (Azure AI Search)
+State Tool: Retrieve workflow state (Redis)
+Event Tool: Publish event to Event Hub
+Prompt Tool: Fetch appropriate prompt templates
+Triggering Agents:
+Based on LLM output, orchestrator publishes events to Event Hub:
+Example: event: "requirement-agent-start", payload: {...}
+Subscribed agent pods (Requirement Agent, Planning Agent, etc.) pick up their event and start processing.
+Technologies:
+LangGraph: Workflow orchestration and agent routing
+LangChain: LLM + tool interface
+GPT (Azure OpenAI / OpenAI): Reasoning and planning
+Azure Event Hub: Event-driven messaging
+🔁 Step 3: Event-Driven Agent Execution
+Flow Trigger: Agent subscribes to Event Hub topics.
+Requirement Agent receives event: "requirement-agent-start"
+Calls LLM to structure requirements
+Uses Redis (state), Azure AI Search (knowledge)
+Once complete, publishes next event: "planning-agent-start"
+Planning Agent subscribes to "planning-agent-start"
+LLM generates design / implementation plan
+Calls knowledge tools, state tools
+Publishes "coding-agent-start"
+Coding Agent subscribes to "coding-agent-start"
+LLM + Tools generate code:
+Git API → create branch / PR
+Formatter / Dependency Tool → apply style, check packages
+State Tool → update progress
+Publishes "reflection-agent-start"
+Reflection / Reflexion Agent validates / critiques
+LLM checks for errors / gaps
+Updates state in Redis / logs in Azure SQL
+Test Agent triggers on code completion
+Generates and executes tests
+Updates state / publishes test results
+Review Agent + Security Agent + PR Approval
+Sequentially triggered via Event Hub events
+LLM + Tools analyze code, security scans, PR approvals
+📤 Step 4: User Response / Output
+Once PR Approval Agent confirms success:
+Gateway API receives final output via orchestrator
+Response to user includes:
+Generated code
+Test results
+PR / repository link
+Any warnings / notes from Reflection / Security
+Technologies involved in response:
+FastAPI → HTTP response
+Storage → GitHub / Azure DevOps / Azure SQL
+🔑 Key Points About Triggering
+Trigger Point	Trigger Type	How It Works
+User API Call → Gateway	HTTP POST / REST API	Payload includes intent & metadata
+Gateway → Orchestrator	REST/gRPC API call	Orchestrator parses intent & invokes LLM
+Orchestrator → Agents	Event Hub publish/subscribe	Event topics per agent (requirement, planning, coding…)
+Agents → Next Agent	Event Hub	Each agent publishes event on completion
+Reflexion / Feedback Loop	Event / Redis update	Improves next workflow run
+✅ Summary of Technologies Involved
+Layer / Component	Technology / Tool
+Gateway API	FastAPI, NGINX / Azure Application Gateway
+Orchestrator (ReAct + Routing)	LangGraph, LangChain, GPT (OpenAI/Azure)
+Event Communication	Azure Event Hub
+State Management	Redis
+Knowledge / Context Search	Azure AI Search
+Code Management	GitHub / Azure DevOps APIs
+Prompt / Template Storage	Azure SQL / DB
+Reflexion / Analytics	GPT, Azure SQL, Azure AI Search
+✅ Takeaway:
+The API call from the user triggers the orchestrator, which uses LLM + tools to decide routing.
+Agents are triggered asynchronously via Event Hub events, not directly by the Gateway.
+LLM + Tools appear at every agent stage to either reason, generate, or validate outputs.
+State (Redis) and Knowledge (AI Search) ensure context is preserved across asynchronous steps.
